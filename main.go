@@ -6,6 +6,8 @@ import (
 	"redis-lock/cache"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -16,12 +18,25 @@ func main() {
 	fmt.Println("---------------")
 	fmt.Printf("Start: %s", start)
 
+	lock(ctx)
+	// unlock(ctx)
+
+	fmt.Println("---------------")
+	fmt.Printf("Finish: %s", time.Now())
+	fmt.Println("")
+	since := time.Since(start)
+	fmt.Printf("Time taken: %s", since)
+	fmt.Println("")
+	fmt.Println("---------------")
+}
+
+func lock(ctx context.Context) {
 	var keys []string
 	var values []interface{}
 
-	for i := 0; i < 2000000; i++ {
+	for i := 0; i < 3000000; i++ {
 		keys = append(keys, strconv.Itoa(i+1))
-		values = append(values, strconv.Itoa(i+1), strconv.Itoa(i+1)+"test-more-characteres")
+		values = append(values, uuid.New().String(), "{\"time\": \""+time.Now().Format(time.RFC3339Nano)+"\", \"status\":\"LOCKED\",\"by\":\"RPaaS\"}")
 	}
 	res, err := cache.GetAll(ctx, keys...)
 	if err != nil {
@@ -35,6 +50,7 @@ func main() {
 		}
 	}
 	if len(foundValues) > 0 {
+		fmt.Println("")
 		fmt.Println("A value has been found")
 	} else {
 		err = cache.SetAll(ctx, values...)
@@ -43,10 +59,16 @@ func main() {
 			fmt.Printf("Error: %v", err)
 		}
 	}
-	fmt.Println("---------------")
-	fmt.Printf("Finish: %s", time.Now())
-	fmt.Println("")
-	since := time.Since(start)
-	fmt.Printf("Took time: %s", since)
-	fmt.Println("---------------")
+}
+
+func unlock(ctx context.Context) {
+	var unlockKeys []string
+	for i := 0; i < 300; i++ {
+		unlockKeys = append(unlockKeys, strconv.Itoa(i+1))
+	}
+	err := cache.RemoveAll(ctx, unlockKeys...)
+	if err != nil {
+		fmt.Println("")
+		fmt.Printf("Error removing: %v", err)
+	}
 }

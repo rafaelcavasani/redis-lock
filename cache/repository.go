@@ -17,3 +17,11 @@ func SetAll(ctx context.Context, values ...interface{}) error {
 	}
 	return nil
 }
+
+func RemoveAll(ctx context.Context, values ...string) error {
+	err := client.Del(ctx, values...).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
