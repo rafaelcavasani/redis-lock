@@ -19,9 +19,9 @@ func main() {
 	var keys []string
 	var values []interface{}
 
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < 2000000; i++ {
 		keys = append(keys, strconv.Itoa(i+1))
-		values = append(values, strconv.Itoa(i+1), strconv.Itoa(i+1))
+		values = append(values, strconv.Itoa(i+1), strconv.Itoa(i+1)+"test-more-characteres")
 	}
 	res, err := cache.GetAll(ctx, keys...)
 	if err != nil {
@@ -35,10 +35,8 @@ func main() {
 		}
 	}
 	if len(foundValues) > 0 {
-		fmt.Println("")
-		fmt.Printf("A value has been found, %s", foundValues)
+		fmt.Println("A value has been found")
 	} else {
-		fmt.Printf("values, %s", values...)
 		err = cache.SetAll(ctx, values...)
 		if err != nil {
 			fmt.Println("")
